@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: fdtdw
+Version: 0.1.0
+Summary: fdtd package
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: warp-lang
+Requires-Dist: pyvista
+Requires-Dist: imageio
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Dynamic: license-file

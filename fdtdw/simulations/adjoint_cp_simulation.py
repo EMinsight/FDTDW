@@ -54,7 +54,16 @@ class AdjointCpSimulation(AdjointSimulation):
         self._BUFFERSIZE = BUFFERSIZE
         self._CHECKPOINTS = CHECKPOINTS
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries
+            STEPS=STEPS, 
+            NX=NX, 
+            NY=NY, 
+            NZ=NZ, 
+            S=S, 
+            PML_THICKNESS=PML_THICKNESS, 
+            dx=dx, 
+            eta=eta, 
+            DEVICE=DEVICE, 
+            boundaries=boundaries
         )
 
     @use_device

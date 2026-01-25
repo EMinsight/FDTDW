@@ -1,4 +1,4 @@
-from .adjoint32 import calc_grad, map_yz, map_xz, map_xy, flip_h, flip_axis_h
+from .adjoint32 import calc_grad#, map_yz, map_xz, map_xy, flip_h, flip_axis_h
 from .complex32 import (
     compute_dft_coeffs,
     compute_dft_pdf,
@@ -61,11 +61,11 @@ from .utils32 import (
 
 __all__ = [
     "calc_grad",
-    "map_yz",
-    "map_xz",
-    "map_xy",
-    "flip_h",
-    "flip_axis_h",
+    # "map_yz",
+    # "map_xz",
+    # "map_xy",
+    # "flip_h",
+    # "flip_axis_h",
     "compute_dft_coeffs",
     "compute_dft_pdf",
     "accumulate_dft",
@@ -84,8 +84,8 @@ __all__ = [
     "save_detector_full_yz",
     "save_detector_full_xz",
     "save_detector_full_xy",
-    "jacobi_step",
-    "neg_grad_phi",
+    # "jacobi_step",
+    # "neg_grad_phi",
     "set_material_properties",
     "inject_esources_yz",
     "inject_esources_xz",

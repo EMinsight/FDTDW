@@ -1,0 +1,7 @@
+numpy
+warp-lang
+pyvista
+imageio
+
+[dev]
+pytest

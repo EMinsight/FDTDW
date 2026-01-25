@@ -54,7 +54,16 @@ class AdjointSimulation(BaseSimulation):
     ):
 
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries
+            STEPS=STEPS, 
+            NX=NX, 
+            NY=NY, 
+            NZ=NZ, 
+            S=S, 
+            PML_THICKNESS=PML_THICKNESS, 
+            dx=dx, 
+            eta=eta, 
+            DEVICE=DEVICE, 
+            boundaries=boundaries
         )
 
     @abstractmethod
@@ -285,15 +294,15 @@ class AdjointSimulation(BaseSimulation):
                 case "xy":
                     wrapper.inject_esource_ad = kn.inject_esources_xy
                     wrapper.inject_hsource_ad = kn.inject_hsources_xy
-                    wrapper.map = kn.map_xy
+                    # wrapper.map = kn.map_xy
                 case "xz":
                     wrapper.inject_esource_ad = kn.inject_esources_xz
                     wrapper.inject_hsource_ad = kn.inject_hsources_xz
-                    wrapper.map = kn.map_xz
+                    # wrapper.map = kn.map_xz
                 case "yz":
                     wrapper.inject_esource_ad = kn.inject_esources_yz
                     wrapper.inject_hsource_ad = kn.inject_hsources_yz
-                    wrapper.map = kn.map_yz
+                    # wrapper.map = kn.map_yz
 
     @abstractmethod
     def _record_forward(self) -> Any:
