@@ -1,4 +1,3 @@
-# Import required libraries and modules
 import time
 
 import jax
@@ -7,63 +6,46 @@ import pytreeclass as tc
 from loguru import logger
 import fdtdx
 
-# scale for dimensionless units
 c0 = fdtdx.constants.c
 length_unit = 1e-6
 time_unit = length_unit / c0
 freq_unit = c0 / length_unit
-
+resolution =1e-1 * length_unit
+N=240
 
 def main():
-    # Initialize experiment logger for saving outputs and tracking progress
     exp_logger = fdtdx.Logger(
         experiment_name="simulate_source",
     )
-    # Create a JAX random key for reproducibility and stochastic operations
     key = jax.random.PRNGKey(seed=42)
 
-    # Set simulation wavelength and calculate corresponding period
     wavelength = 1.55 * length_unit
     period = fdtdx.constants.wavelength_to_period(wavelength)
 
     object_list = []
-    # Define simulation configuration (duration, resolution, data type, etc.)
     config = fdtdx.SimulationConfig(
         time=100 * time_unit,
-        resolution=1e-1 * length_unit,
+        resolution=resolution,
         dtype=jnp.float32,
         courant_factor=0.5 * (3**0.5),
     )
 
-    # Calculate number of time steps per period and log simulation info
     period_steps = round(period / config.time_step_duration)
     logger.info(f"{config.time_steps_total=}")
     logger.info(f"{period_steps=}")
     logger.info(f"{config.max_travel_distance=}")
 
-    # Set up gradient recording for simulation (for autodiff/backprop)
-    # gradient_config = fdtdx.GradientConfig(
-    #     recorder=fdtdx.Recorder(
-    #         modules=[
-    #             fdtdx.DtypeConversion(dtype=jnp.bfloat16),
-    #         ]
-    #     )
-    # )
-    # config = config.aset("gradient_config", gradient_config)
-
-    # List to hold placement constraints for simulation objects
+   
     constraints = []
 
-    # Define the simulation volume and background material
     volume = fdtdx.SimulationVolume(
-        partial_real_shape=(24e0 * length_unit, 24 * length_unit, 24 * length_unit),
+        partial_real_shape=(N*resolution,N*resolution,N*resolution),
         material=fdtdx.Material(  # Background material
             permittivity=1.0,
         ),
     )
 
     object_list.append(volume)
-    # Choose boundary type: periodic or PML (absorbing)
     periodic = False
     if periodic:
         bound_cfg = fdtdx.BoundaryConfig.from_uniform_bound(boundary_type="periodic")
@@ -71,12 +53,10 @@ def main():
         bound_cfg = fdtdx.BoundaryConfig.from_uniform_bound(
             thickness=20, boundary_type="pml"
         )
-    # Add boundary objects and constraints to the simulation
     bound_dict, c_list = fdtdx.boundary_objects_from_config(bound_cfg, volume)
     constraints.extend(c_list)
 
     object_list.extend(list(bound_dict.values()))
-    # Define and place the Gaussian source in the simulation volume
     source = fdtdx.UniformPlaneSource(
         partial_grid_shape=(None, None, 1),
         partial_real_shape=(10 * length_unit, 10 * length_unit, None),
@@ -112,18 +92,7 @@ def main():
     logger.info(tc.tree_summary(arrays, depth=1))
     print(tc.tree_diagram(config, depth=4))
 
-    # exp_logger.savefig(
-    #     exp_logger.cwd,
-    #     "setup.png",
-    #     fdtdx.plot_setup(
-    #         config=config,
-    #         objects=objects,
-    #         # exclude_object_list=[
-    #         #     #  backwards_video_energy_detector,
-    #         #     video_energy_detector,
-    #         # ],
-    #     ),
-    # )
+
 
     def sim_fn(
         params: fdtdx.ParameterContainer,
@@ -140,15 +109,7 @@ def main():
         )
         _, arrays = final_state
 
-        # Run backward simulation (for gradients or adjoint fields)
-        # _, arrays = fdtdx.full_backward(
-        #     state=final_state,
-        #     objects=new_objects,
-        #     config=config,
-        #     key=key,
-        #     record_detectors=True,
-        #     reset_fields=True,
-        # )
+
 
         new_info = {
             **info,

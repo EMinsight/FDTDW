@@ -51,6 +51,7 @@ class AdjointSimulation(BaseSimulation):
             "zmin": "PML",
             "zmax": "PML",
         },
+        kernel: str = "warp",
     ):
 
         super().__init__(
@@ -63,7 +64,8 @@ class AdjointSimulation(BaseSimulation):
             dx=dx, 
             eta=eta, 
             DEVICE=DEVICE, 
-            boundaries=boundaries
+            boundaries=boundaries,
+            kernel=kernel
         )
 
     @abstractmethod

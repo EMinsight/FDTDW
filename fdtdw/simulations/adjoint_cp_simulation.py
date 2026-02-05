@@ -40,6 +40,7 @@ class AdjointCpSimulation(AdjointSimulation):
             "zmin": "PML",
             "zmax": "PML",
         },
+        kernel: str = "warp",
     ):
         if STEPS == -1:
             STEPS = BUFFERSIZE * CHECKPOINTS
@@ -63,7 +64,9 @@ class AdjointCpSimulation(AdjointSimulation):
             dx=dx, 
             eta=eta, 
             DEVICE=DEVICE, 
-            boundaries=boundaries
+            boundaries=boundaries,
+            kernel=kernel
+
         )
 
     @use_device
@@ -152,7 +155,7 @@ class AdjointCpSimulation(AdjointSimulation):
                         )
 
                     wp.launch(
-                        kn.update_e,
+                        self.update_e,
                         dim=self._shape_grid,
                         inputs=[self._state, self._properties],
                     )
@@ -163,7 +166,7 @@ class AdjointCpSimulation(AdjointSimulation):
                             inputs=[self._state, wrapper.source, self._idx_time],
                         )
                     wp.launch(
-                        kn.update_h,
+                        self.update_h,
                         dim=self._shape_grid,
                         inputs=[self._state, self._properties],
                     )
@@ -283,7 +286,7 @@ class AdjointCpSimulation(AdjointSimulation):
                         )
 
                     wp.launch(
-                        kn.update_e,
+                        self.update_e,
                         dim=self._shape_grid,
                         inputs=[self._state, self._properties],
                     )
@@ -294,7 +297,7 @@ class AdjointCpSimulation(AdjointSimulation):
                             inputs=[self._state, wrapper.source, self._idx_time],
                         )
                     wp.launch(
-                        kn.update_h,
+                        self.update_h,
                         dim=self._shape_grid,
                         inputs=[self._state, self._properties],
                     )
@@ -318,7 +321,7 @@ class AdjointCpSimulation(AdjointSimulation):
                         )
 
                     wp.launch(
-                        kn.update_e,
+                        self.update_e,
                         dim=self._shape_grid,
                         inputs=[self._state_adj, self._properties],
                     )
@@ -333,7 +336,7 @@ class AdjointCpSimulation(AdjointSimulation):
                             ],
                         )
                     wp.launch(
-                        kn.update_h,
+                        self.update_h,
                         dim=self._shape_grid,
                         inputs=[self._state_adj, self._properties],
                     )

@@ -82,6 +82,7 @@ class BaseSimulation(ABC):
             "zmin": "PML",
             "zmax": "PML",
         },
+        kernel: str = "warp"
     ):
         self._STEPS = STEPS
         self._NX = NX
@@ -94,7 +95,7 @@ class BaseSimulation(ABC):
         self._device = DEVICE
         self._boundaries = boundaries
         self._R_0 = R_0
-
+        self.kernel = kernel
         self._save_detector: Any = None
         self._forward_graph_tape: Any = None
 
@@ -691,6 +692,19 @@ class BaseSimulation(ABC):
         self._forward_graph_tape = self._record_forward()
 
     def _set_kernels(self):
+        
+        match self.kernel:
+            case "warp":
+                self.update_e = kn.update_e
+                self.update_h = kn.update_h
+            case "yee":
+                self.update_e = kn.update_yee_e
+                self.update_h = kn.update_yee_h
+            case "pml":
+                self.update_e = kn.update_pml_e
+                self.update_h = kn.update_pml_h
+
+
         for wrapper in self._sources:
 
             match wrapper.plane:

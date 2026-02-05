@@ -6,12 +6,23 @@ from fdtdw import (
 import numpy as np
 import matplotlib.pyplot as plt
 import warp as wp
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--N', type=int, default=240)
+parser.add_argument('--kernel', type=str, default='warp')
+
+args = parser.parse_args()
+
+N = args.N
+kernel = args.kernel
+
+print(f"Running simulation with N={N}, kernel={kernel}")
 sim = MaterialSimulation(
     Simulation(
-        NX=240,
-        NY=240,
-        NZ=240,
+        NX=N,
+        NY=N,
+        NZ=N,
         STEPS=2000,
         DEVICE="cuda:0",
         boundaries={
@@ -23,12 +34,13 @@ sim = MaterialSimulation(
             "zmax": "PML",
         },
         PML_THICKNESS=20,
+        kernel= kernel
     ),
     StandardMaterialModel(dx=0.01, S=0.50),
 )
 
 NX, NY, NZ = 120, 120, 120
-NU, NV = 100, 100
+NU, NV = 20, 20
 DSX = (NX - NU) // 2
 DSY = (NY - NV) // 2
 DSZ = (NZ) // 2
@@ -67,11 +79,8 @@ sim.init_source(
 )
 
 
-# sim.init_detector((NU, NV), DSX,DSY,DSZ+20, "xy")
-
 sim.record_graphs()
 
 sim.launch_forward()
-# sim.render_detector_video(field="Ev", filename="det.mp4", limit=1)
 sim.render_source_video(field="Ev", filename="src.mp4", limit=0.1)
 print(sim)

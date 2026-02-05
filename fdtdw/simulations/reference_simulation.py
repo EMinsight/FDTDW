@@ -39,9 +39,10 @@ class ReferenceSimulation(BaseSimulation):
             "zmin": "PML",
             "zmax": "PML",
         },
+        kernel: str = "warp",
     ):
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, R_0, DEVICE, boundaries
+            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, R_0, DEVICE, boundaries,kernel=kernel
         )
 
     def _allocate_specific(self):
@@ -56,7 +57,7 @@ class ReferenceSimulation(BaseSimulation):
             for c in range(self._STEPS):
 
                 wp.launch(
-                    kn.update_e,
+                    self.update_e,
                     dim=self._shape_grid,
                     inputs=[self._state, self._properties],
                 )
@@ -67,7 +68,7 @@ class ReferenceSimulation(BaseSimulation):
                         inputs=[self._state, wrapper.source, self._idx_time],
                     )
                 wp.launch(
-                    kn.update_h,
+                    self.update_h,
                     dim=self._shape_grid,
                     inputs=[self._state, self._properties],
                 )

@@ -41,13 +41,14 @@ class AdjointDftSimulation(AdjointSimulation):
             "zmin": "PML",
             "zmax": "PML",
         },
+        kernel: str = "warp",
     ):
 
         self._freqs = wp.array(FREQUENCIES, dtype=wp.float32, device=DEVICE)
         self._freqs_shape = FREQUENCIES.shape
         self._w_freqs = wp.ones(self._freqs_shape)
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries
+            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries, kernel=kernel
         )
 
     @use_device
@@ -112,7 +113,7 @@ class AdjointDftSimulation(AdjointSimulation):
                     )
 
                 wp.launch(
-                    kn.update_e,
+                    self.update_e,
                     dim=self._shape_grid,
                     inputs=[self._state, self._properties],
                 )
@@ -123,7 +124,7 @@ class AdjointDftSimulation(AdjointSimulation):
                         inputs=[self._state, wrapper.source, self._idx_time],
                     )
                 wp.launch(
-                    kn.update_h,
+                    self.update_h,
                     dim=self._shape_grid,
                     inputs=[self._state, self._properties],
                 )
@@ -153,7 +154,7 @@ class AdjointDftSimulation(AdjointSimulation):
                         inputs=[self._state_adj, wrapper.source_adj, self._idx_time],
                     )
                 wp.launch(
-                    kn.update_e,
+                    self.update_e,
                     dim=self._shape_grid,
                     inputs=[self._state_adj, self._properties],
                 )
@@ -164,7 +165,7 @@ class AdjointDftSimulation(AdjointSimulation):
                         inputs=[self._state_adj, wrapper.source_adj, self._idx_time],
                     )
                 wp.launch(
-                    kn.update_h,
+                    self.update_h,
                     dim=self._shape_grid,
                     inputs=[self._state_adj, self._properties],
                 )

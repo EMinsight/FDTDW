@@ -50,6 +50,8 @@ from .structs32 import (
     Properties,
 )
 from .update32 import update_h, update_e
+from .updateyee32 import update_yee_h, update_yee_e
+from .updatepml32 import update_pml_h, update_pml_e
 from .utils32 import (
     calc_flux_xy,
     calc_flux_yz,
@@ -112,6 +114,10 @@ __all__ = [
     "Properties",
     "update_h",
     "update_e",
+    "update_yee_h",
+    "update_yee_e",
+    "update_pml_h",
+    "update_pml_e",
     "calc_flux_xy",
     "calc_flux_yz",
     "calc_flux_xz",
