@@ -8,12 +8,12 @@ def plot_benchmark(filename="results.csv"):
 
     try:
         with open(filename, "r") as f:
-            next(f)  # Skip header
+            header = next(f)  # Skip header
             
             for line in f:
                 if not line.strip(): continue                
                 parts = line.strip().split(",")
-                kernel = parts[0]
+                kernel = parts[0].strip()
                 N = int(parts[1])
                 time = float(parts[2])
 
@@ -30,42 +30,87 @@ def plot_benchmark(filename="results.csv"):
     
     timesteps = 2000
 
-    for kernel, points in data.items():
+    def get_vectors(k_name):
+        points = data[k_name]
         points.sort(key=lambda x: x[0])
+        Ns = np.array([p[0] for p in points])
+        Ts = np.array([p[1] / (p[0]**3) / timesteps * 10e9 for p in points])
+        return Ns, Ts
+
+    c_yee = 'limegreen'     
+    c_pml = 'darkgreen'     
+    c_warp = 'forestgreen'  # Medium Green (Measured Warp)
+    c_split = 'gold'        # Yellow (Model)
+
+    plot_defs = [
+        ('yee', 'yee_isotrop_approx', c_yee, 'Yee (Core)', ':'),
+        ('pml', 'pml_isotrop_approx', c_pml, 'PML (Boundary)', ':'), 
+        ('split_approx', 'split_isotrop_approx', c_split, 'Split Model', '-'),
+    ]
+
+    plotted_kernels = set()
+
+    for base_key, iso_key, color, label, style in plot_defs:
+        if base_key in data:
+            n_base, t_base = get_vectors(base_key)
+            plotted_kernels.add(base_key)
+            
+            final_style = style
+            if base_key == 'pml': final_style = '-'
+            
+            if iso_key in data:
+                n_iso, t_iso = get_vectors(iso_key)
+                plotted_kernels.add(iso_key)
+                
+                base_dict = dict(zip(n_base, t_base))
+                iso_dict = dict(zip(n_iso, t_iso))
+                common_Ns = sorted(list(set(base_dict.keys()) & set(iso_dict.keys())))
+                
+                if common_Ns:
+                    common_Ns = np.array(common_Ns)
+                    t_base_common = np.array([base_dict[n] for n in common_Ns])
+                    t_iso_common = np.array([iso_dict[n] for n in common_Ns])
+                    
+                    ax1.fill_between(common_Ns, t_base_common, t_iso_common, 
+                                     color=color, alpha=0.3, linewidth=0, zorder=1)
+
+            ax1.plot(n_base, t_base, linestyle=final_style, color=color, 
+                     label=label, marker='o', markersize=3, linewidth=1.5, zorder=3)
+
+    for kernel in data.keys():
+        if kernel in plotted_kernels: continue
+        if "isotrop" in kernel: continue 
+        if "split_approx_real" in kernel: continue
         
-        N_list = [p[0] for p in points]
-        norm_time_list = [p[1] / (p[0]**3) / timesteps * 10e9 for p in points]
-
-        if "pml" in kernel or "warp" in kernel or "split_approx" in kernel:
-            current_linestyle = '-' 
-        else:
-            current_linestyle = ':'
-
-        if "approx" in kernel:
-            current_color = 'gold'       
-        elif "fdtdx" in kernel:
-            current_color = 'tab:red'
-        elif "meep" in kernel:
-            current_color = 'tab:blue'
+        n_k, t_k = get_vectors(kernel)
+        
+        ls = ':'
+        mk = 'o'
+        c = 'grey'
+        zo = 4 
+        
+        if "fdtdx" in kernel: 
+            c = 'tab:red'       
+            ls = '-' if "pml" in kernel else ':'
+            
+        elif "meep" in kernel: 
+            c = 'tab:blue'      
+            ls = '-' if "pml" in kernel else ':'
+            
         elif "warp" in kernel:
-            current_color = 'darkgreen'
-        else:
-            current_color = 'limegreen'
-
-        ax1.plot(
-            N_list, 
-            norm_time_list, 
-            linestyle=current_linestyle, 
-            color=current_color,
-            label=kernel,
-            marker='o',      
-            markersize=3,    
-            linewidth=1.0   
-        )
+            c = c_warp          
+            ls = '-'
+        
+        elif "pml" in kernel and kernel == "pml": 
+             c = c_pml
+             ls = '-'
+             
+        ax1.plot(n_k, t_k, linestyle=ls, color=c, label=kernel, 
+                 marker=mk, markersize=3, zorder=zo)
 
     ax1.set_yscale('log')
     ax1.set_xscale('log')
-    ax1.set_xlabel("$N$")
+    ax1.set_xlabel("Grid Size ($N$)")
     ax1.set_ylabel(r"$t / N^3 $ [ns]")
     
     custom_ticks = [40, 60, 100, 200, 400]
@@ -73,24 +118,26 @@ def plot_benchmark(filename="results.csv"):
     ax1.set_xticklabels([str(t) for t in custom_ticks])
     ax1.xaxis.set_major_formatter(ScalarFormatter())   
     
-    ax2 = ax1.twiny()     
+    ax2 = ax1.twiny()
     ax2.set_xscale('log')
     ax2.set_xlim(ax1.get_xlim())
-    
     ax2.set_xticks(custom_ticks)
     
     def calculate_pml_frac(n):
         thickness = 20
-        if n <= 2 * thickness:
-            return 1.0 
-        return 1.0 - ((n-40)**3 / n**3)
+        if n <= 2 * thickness: return 1.0
+        dim_inner = n - 2 * thickness
+        vol_inner = dim_inner**3
+        vol_total = n**3
+        return 1.0 - (vol_inner / vol_total)
 
-    tick_labels = [f"{calculate_pml_frac(n)*100:.0f}%" for n in custom_ticks]
-    ax2.set_xticklabels(tick_labels)
+    ax2.set_xticklabels([f"{calculate_pml_frac(n)*100:.0f}%" for n in custom_ticks])
+    ax2.set_xlabel("PML Volume Fraction (%)")
     
-    ax2.set_xlabel(r"$V_{pml}/V$")
+    handles, labels = ax1.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax1.legend(by_label.values(), by_label.keys(), loc='center right', fontsize='small')
     
-    ax1.legend()
     ax1.grid(True, which="both", ls="-", alpha=0.4, linewidth=0.5)
     plt.tight_layout()
     
