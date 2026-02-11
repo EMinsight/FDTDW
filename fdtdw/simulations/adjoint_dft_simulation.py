@@ -42,13 +42,15 @@ class AdjointDftSimulation(AdjointSimulation):
             "zmax": "PML",
         },
         kernel: str = "warp",
+        graph_nodes: int = 100
+
     ):
 
         self._freqs = wp.array(FREQUENCIES, dtype=wp.float32, device=DEVICE)
         self._freqs_shape = FREQUENCIES.shape
         self._w_freqs = wp.ones(self._freqs_shape)
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries, kernel=kernel
+            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, DEVICE, boundaries, kernel=kernel, graph_nodes=graph_nodes
         )
 
     @use_device
@@ -94,7 +96,7 @@ class AdjointDftSimulation(AdjointSimulation):
     @use_device
     def _record_forward(self) -> Any:
 
-        tape = GraphTape(self._device, max_nodes=500)
+        tape = GraphTape(self._device, max_nodes=self.graph_nodes)
         with tape:
             wp.launch(kn.reset_integer, dim=1, inputs=[self._idx_time])
             for c in range(self._STEPS):

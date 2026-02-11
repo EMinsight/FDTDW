@@ -5,7 +5,7 @@ from fdtdw import (
 )
 import numpy as np
 
-NX, NY, NZ = 64, 64, 512
+NX, NY, NZ = 64, 32, 512
 S = 0.56
 sim = MaterialSimulation(
     Simulation(
@@ -33,8 +33,8 @@ DSX = 1
 DSY = 1
 DSZ = NZ // 2
 
-width = 250.0
-center = 600.0
+width = 300.0
+center = 500.0
 
 OMEGA = 2.0 * np.pi / width
 OMEGA_t = 2.0 * np.pi / width / S

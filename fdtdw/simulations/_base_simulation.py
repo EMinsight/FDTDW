@@ -82,7 +82,8 @@ class BaseSimulation(ABC):
             "zmin": "PML",
             "zmax": "PML",
         },
-        kernel: str = "warp"
+        kernel: str = "warp",
+        graph_nodes: int = 100
     ):
         self._STEPS = STEPS
         self._NX = NX
@@ -96,6 +97,7 @@ class BaseSimulation(ABC):
         self._boundaries = boundaries
         self._R_0 = R_0
         self.kernel = kernel
+        self.graph_nodes= graph_nodes
         self._save_detector: Any = None
         self._forward_graph_tape: Any = None
 

@@ -40,9 +40,10 @@ class ReferenceSimulation(BaseSimulation):
             "zmax": "PML",
         },
         kernel: str = "warp",
+        graph_nodes: int = 100
     ):
         super().__init__(
-            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, R_0, DEVICE, boundaries,kernel=kernel
+            STEPS, NX, NY, NZ, S, PML_THICKNESS, dx, eta, R_0, DEVICE, boundaries,kernel=kernel, graph_nodes=graph_nodes
         )
 
     def _allocate_specific(self):
@@ -51,7 +52,7 @@ class ReferenceSimulation(BaseSimulation):
     @use_device
     def _record_forward(self) -> Any:
 
-        tape = GraphTape(self._device, max_nodes=500)
+        tape = GraphTape(self._device, max_nodes=self.graph_nodes)
         with tape:
             wp.launch(kn.reset_integer, dim=1, inputs=[self._idx_time])
             for c in range(self._STEPS):

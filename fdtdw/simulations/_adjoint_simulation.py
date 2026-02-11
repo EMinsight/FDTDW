@@ -52,6 +52,7 @@ class AdjointSimulation(BaseSimulation):
             "zmax": "PML",
         },
         kernel: str = "warp",
+        graph_nodes: int = 100
     ):
 
         super().__init__(
@@ -65,7 +66,8 @@ class AdjointSimulation(BaseSimulation):
             eta=eta, 
             DEVICE=DEVICE, 
             boundaries=boundaries,
-            kernel=kernel
+            kernel=kernel,
+            graph_nodes= graph_nodes
         )
 
     @abstractmethod

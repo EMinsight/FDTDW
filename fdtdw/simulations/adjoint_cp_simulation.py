@@ -41,6 +41,7 @@ class AdjointCpSimulation(AdjointSimulation):
             "zmax": "PML",
         },
         kernel: str = "warp",
+        graph_nodes: int = 100
     ):
         if STEPS == -1:
             STEPS = BUFFERSIZE * CHECKPOINTS
@@ -65,8 +66,8 @@ class AdjointCpSimulation(AdjointSimulation):
             eta=eta, 
             DEVICE=DEVICE, 
             boundaries=boundaries,
-            kernel=kernel
-
+            kernel=kernel,
+            graph_nodes=graph_nodes
         )
 
     @use_device
@@ -134,7 +135,7 @@ class AdjointCpSimulation(AdjointSimulation):
     @use_device
     def _record_forward(self) -> Any:
 
-        tape = GraphTape(self._device, max_nodes=500)
+        tape = GraphTape(self._device, max_nodes=self.graph_nodes)
 
         with tape:
             wp.launch(kn.reset_integer, dim=1, inputs=[self._idx_time])

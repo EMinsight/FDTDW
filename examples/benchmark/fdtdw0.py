@@ -11,11 +11,12 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--N', type=int, default=240)
 parser.add_argument('--kernel', type=str, default='warp')
-
+parser.add_argument('--nodes', type=int, default=100)
 args = parser.parse_args()
 
 N = args.N
 kernel = args.kernel
+nodes=args.nodes
 
 print(f"Running simulation with N={N}, kernel={kernel}")
 sim = MaterialSimulation(
@@ -34,7 +35,8 @@ sim = MaterialSimulation(
             "zmax": "PML",
         },
         PML_THICKNESS=20,
-        kernel= kernel
+        kernel= kernel,
+        graph_nodes=nodes
     ),
     StandardMaterialModel(dx=0.01, S=0.50),
 )
